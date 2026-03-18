@@ -19,7 +19,8 @@ router.post('/validate', authMiddleware, async (req, res) => {
     return res.status(404).json({ is_valid: false, error: 'Unknown packing machine barcode', alarm: true });
   }
 
-  const now = new Date().toISOString();
+  const nowObj = new Date();
+  const nowLocalStr = new Date(nowObj.getTime() - (nowObj.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
 
   // Find active approved production plan for this machine
   const plan = await db.get(`
@@ -31,7 +32,7 @@ router.post('/validate', authMiddleware, async (req, res) => {
       AND pp.start_datetime <= ?
       AND pp.end_datetime >= ?
     LIMIT 1
-  `, machine.id, now, now);
+  `, machine.id, nowLocalStr, nowLocalStr);
 
   if (!plan) {
     return res.json({
@@ -80,7 +81,9 @@ router.get('/machine/:machine_barcode', authMiddleware, async (req, res) => {
   const machine = await db.get('SELECT * FROM packing_machines WHERE machine_code = ? AND is_active = 1', req.params.machine_barcode);
   if (!machine) return res.status(404).json({ error: 'Machine not found' });
 
-  const now = new Date().toISOString();
+  const nowObj = new Date();
+  const nowLocalStr = new Date(nowObj.getTime() - (nowObj.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+
   const plan = await db.get(`
     SELECT pp.*, rm.part_number, rm.name as rm_name
     FROM production_plans pp
@@ -90,7 +93,7 @@ router.get('/machine/:machine_barcode', authMiddleware, async (req, res) => {
       AND pp.start_datetime <= ?
       AND pp.end_datetime >= ?
     LIMIT 1
-  `, machine.id, now, now);
+  `, machine.id, nowLocalStr, nowLocalStr);
 
   res.json({ machine, plan: plan || null });
 });
