@@ -65,8 +65,6 @@ export default function ProductionPlanningPage() {
   };
 
   const handleAction = async (plan, action) => {
-    const labels = { pending_approval:'Submit for Approval', approved:'Approve', draft:'Reject (Back to Draft)', cancelled:'Cancel', completed:'Mark as Completed' };
-    if (!window.confirm(`${labels[action] || action} plan #${plan.id}?`)) return;
     try {
       if (action === 'pending_approval') await api.submitPlan(plan.id);
       else if (action === 'approved') await api.approvePlan(plan.id);
@@ -74,7 +72,10 @@ export default function ProductionPlanningPage() {
       else if (action === 'cancelled') await api.cancelPlan(plan.id);
       else if (action === 'completed') await api.completePlan(plan.id);
       await load();
-    } catch (err) { alert(err.message); }
+      setError('');
+    } catch (err) { 
+      setError(err.message || 'Action failed'); 
+    }
   };
 
   const STATUSES = ['all', 'draft', 'pending_approval', 'approved', 'in_progress', 'completed', 'cancelled'];
@@ -88,6 +89,8 @@ export default function ProductionPlanningPage() {
         </div>
         <button id="create-plan-btn" className="btn btn-primary" onClick={openCreate}>+ New Plan</button>
       </div>
+
+      {error && !showModal && <div className="alert alert-error" style={{ marginBottom:'16px' }}>⚠️ {error} <button style={{float:'right', background:'none', border:'none', cursor:'pointer'}} onClick={() => setError('')}>✕</button></div>}
 
       {/* Status filter tabs */}
       <div style={{ display:'flex', gap:'6px', marginBottom:'20px', flexWrap:'wrap' }}>
