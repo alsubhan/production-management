@@ -123,4 +123,14 @@ router.post('/:id/cancel', authMiddleware, requireRole('admin', 'production_mana
   res.json({ success: true });
 });
 
+// POST complete plan
+router.post('/:id/complete', authMiddleware, requireRole('admin', 'production_manager', 'operator'), async (req, res) => {
+  const db = await getDb();
+  const plan = await db.get('SELECT * FROM production_plans WHERE id = ?', req.params.id);
+  if (!plan) return res.status(404).json({ error: 'Not found' });
+  if (plan.status !== 'in_progress') return res.status(400).json({ error: 'Only in_progress plans can be completed' });
+  await db.run(`UPDATE production_plans SET status='completed', updated_at=datetime('now') WHERE id=?`, req.params.id);
+  res.json({ success: true });
+});
+
 module.exports = router;

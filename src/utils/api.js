@@ -52,6 +52,7 @@ export const api = {
   approvePlan: (id) => request('POST', `/production-plans/${id}/approve`),
   rejectPlan: (id) => request('POST', `/production-plans/${id}/reject`),
   cancelPlan: (id) => request('POST', `/production-plans/${id}/cancel`),
+  completePlan: (id) => request('POST', `/production-plans/${id}/complete`),
   // Scan
   validateScan: (machine_barcode, material_barcode) => request('POST', '/scan/validate', { machine_barcode, material_barcode }),
   getMachineInfo: (code) => request('GET', `/scan/machine/${code}`),
